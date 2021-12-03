@@ -137,9 +137,9 @@ class AutoOrder:
 
 if __name__ == '__main__':
     new_task = AutoOrder()
-    new_task.login('202036955', 'wzh168169')
+    # new_task.login('202036955', 'wzh168169')
     # new_task.login('202016948', 'ladida52459')
-    # new_task.login('202016944', 'gsk199938')
+    new_task.login('202016944', 'gsk199938')
     # new_task.login('202034533', 'wuweimeng123')
     # new_task.login('202016949', '.980206zxh.')
     # new_task.login('201936225', 'Zz837868!')

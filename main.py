@@ -14,7 +14,7 @@ init_name = ['马化腾', '耿妙妙', '劳洁玉', '高皓月', '孙忆远', '�
 
 class AutoOrder:
     def __init__(self):
-        self.diver = webdriver.Chrome(r'chromedriver.exe')
+        self.diver = webdriver.Chrome(r'G:\chromedriver\chromedriver.exe')
         self.diver.implicitly_wait(10)
         self.res = dict()
         self.has_place = False
@@ -91,6 +91,7 @@ class AutoOrder:
 
     def complete_select(self, expect):
         wd = self.diver
+        time.sleep(1)
         scheduled_time_opts = self.get_opt_info('JHYYSJ')
         if len(scheduled_time_opts) > 1:
             scheduled_time_opts.remove('')
@@ -160,8 +161,6 @@ if __name__ == '__main__':
         else:
             print('没球打了，洗洗睡吧')
             new_task.diver.refresh()
-
-
-    # new_task.logout()
-    # wd.quit()
+    new_task.logout()
+    wd.quit()
     print('')

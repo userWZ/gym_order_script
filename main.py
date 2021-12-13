@@ -14,7 +14,7 @@ init_name = ['马化腾', '耿妙妙', '劳洁玉', '高皓月', '孙忆远', '�
 
 
 def logger(content):
-    logger_content = '================ ({time}) {content} ================'\
+    logger_content = '================ ({time}) {content} ================' \
         .format(time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), content=content)
     print(logger_content)
 
@@ -82,13 +82,16 @@ class AutoOrder:
         """
         result = False
         wd = self.diver
-        if wd.find_element(By.CLASS_NAME, 'title-01').text == '服务不在有效期':
-            print()
-            logger('当前时间还没有开放预约')
-            result = True
-        else:
-            email_content = '预约开放时间{time}'.format(time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            self.send_email(email_content)
+        try:
+            if wd.find_element(By.CLASS_NAME, 'title-01').text == '服务不在有效期':
+                print()
+                logger('当前时间还没有开放预约')
+                result = True
+            else:
+                email_content = '预约开放时间{time}'.format(time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                self.send_email(email_content)
+        except:
+            pass
         return result
 
     def complete_form(self, number, name):
@@ -104,7 +107,8 @@ class AutoOrder:
         wd.find_element(By.NAME, 'ok').click()
         # 随机填入后三位同学的信息
         random_name = random.sample(init_name, 3)
-        random_number = [random.sample(['2020', '2021', '2019'], 1)[0] + str(random.randint(14000, 99000)) for _ in range(10)]
+        random_number = [random.sample(['2020', '2021', '2019'], 1)[0] + str(random.randint(14000, 99000)) for _ in
+                         range(10)]
         for index in range(0, 3):
             time.sleep(1)
             wd.switch_to.frame('formIframe')
@@ -119,56 +123,47 @@ class AutoOrder:
             wd.find_element(By.NAME, 'ok').click()
         wd.switch_to.frame('formIframe')
 
-    def complete_select(self, expects):
+    def complete_select(self, expect):
         wd = self.diver
         time.sleep(1)
-        for expect, e_index in enumerate(expects):
-            if e_index != 0:
-                wd.back()
-                time.sleep(5)
-            scheduled_time_opts = self.get_opt_info('JHYYSJ')
-            if len(scheduled_time_opts) > 1:
-                scheduled_time_opts.remove('')
-                for index in range(0, len(scheduled_time_opts)):
-                    scheduled_time_opt = scheduled_time_opts[len(scheduled_time_opts) - 1 - index]
-                    print('选择预约时间%s' % scheduled_time_opt)
-                    wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']").click()
-                    wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']/following-sibling::div/ul/li[%s]" %
-                                    str(len(scheduled_time_opts) + 1 - index)).click()
-                    # 开始选择场地
+        scheduled_time_opts = self.get_opt_info('JHYYSJ')
+        if len(scheduled_time_opts) > 1:
+            scheduled_time_opts.remove('')
+            scheduled_time_opt = scheduled_time_opts[len(scheduled_time_opts) - 1]
+            print('选择预约时间%s' % scheduled_time_opt)
+            wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']").click()
+            wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']/following-sibling::div/ul/li[%s]" %
+                            str(len(scheduled_time_opts) + 1)).click()
+            # 开始选择场地
+            time.sleep(1)
+            place_opts = self.get_opt_info('FYCCBH')
+            if len(place_opts) > 1:
+                place_opts.remove('')
+                for place_index in range(0, len(place_opts)):
+                    place_opt = place_opts[place_index]
+                    print('选择预约场地%s' % place_opt)
+                    wd.find_element(By.XPATH, "//button[@data-id='FYCCBH']").click()
+                    wd.find_element(By.XPATH,
+                                    "//button[@data-id='FYCCBH']/following-sibling::div/ul/li[%s]" %
+                                    str(place_index + 2)).click()
+                    # 开始选择使用时间段
                     time.sleep(1)
-                    place_opts = self.get_opt_info('FYCCBH')
-                    if len(place_opts) > 1:
-                        place_opts.remove('')
-                        for place_index in range(0, len(place_opts)):
-                            place_opt = place_opts[place_index]
-                            print('选择预约场地%s' % place_opt)
-                            wd.find_element(By.XPATH, "//button[@data-id='FYCCBH']").click()
-                            wd.find_element(By.XPATH,
-                                            "//button[@data-id='FYCCBH']/following-sibling::div/ul/li[%s]" %
-                                            str(place_index + 2)).click()
-                            # 开始选择使用时间段
-                            time.sleep(1)
-                            consultant_opts = self.get_opt_info('XZSYSD')
-                            expect_full_info = place_opt + expect
-                            if expect_full_info in consultant_opts:
-                                expect_index = consultant_opts.index(expect_full_info)
-                                wd.find_element(By.XPATH, "//button[@data-id='XZSYSD']").click()
-                                wd.find_element(By.XPATH,
-                                                "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
-                                                    expect_index + 1)).click()
-                                self.has_place = True
-                                self.find_place = expect_full_info
-                                self.order_res += str(expect_full_info) + '\n'
-                                logger('找到场地: 时间段{t}'.format(t=expect_full_info))
-                                break
-                            else:
-                                logger(place_opt+'没有想要的时间段了')
-                        if self.has_place:
-                            break
-                        else:
-                            logger(scheduled_time_opt+'没有想要的时间段了')
-                self.old_date = scheduled_time_opts
+                    consultant_opts = self.get_opt_info('XZSYSD')
+                    expect_full_info = place_opt + expect
+                    if expect_full_info in consultant_opts:
+                        expect_index = consultant_opts.index(expect_full_info)
+                        wd.find_element(By.XPATH, "//button[@data-id='XZSYSD']").click()
+                        wd.find_element(By.XPATH,
+                                        "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
+                                            expect_index + 1)).click()
+                        self.has_place = True
+                        self.find_place = expect_full_info
+                        self.order_res += str(expect_full_info) + '\n'
+                        logger('找到场地: 时间段{t}'.format(t=expect_full_info))
+                        break
+                    else:
+                        logger(place_opt + '没有想要的时间段了')
+            self.old_date = scheduled_time_opts
 
 
 if __name__ == '__main__':
@@ -179,42 +174,52 @@ if __name__ == '__main__':
         username='wzh_7076',
         password='ETTTWIGAEHOJSRAP'
     )
+    login_info = [
+        ['201936225', 'Zz837868!'], # 0
+        ['202034533', 'wuweimeng123'], # 0
+        ['202036955', 'wzh168169'], # 0
+        ['202016948', 'ladida52459'], # 0
+        ['202016944', 'gsk199938'], # 0
+        ['202016949', '.980206zxh.'] # 0
+    ]
+    email_content = ''
     new_task = AutoOrder(r'E:\driver\chromedriver.exe', email_module)
-    # new_task.login('202036955', 'wzh168169')
-    # new_task.login('202016948', 'ladida52459')
-    # new_task.login('202016944', 'gsk199938')
-    # new_task.login('202034533', 'wuweimeng123')
-    # new_task.login('202016949', '.980206zxh.')
-    new_task.login('201936225', 'Zz837868!')
-    new_task.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
+    order_list = ['16:00-17:30']
+    today = datetime.datetime.now().weekday()
+    new_task.login(login_info[today][0], login_info[today][1])
+    new_task.jump(
+        'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
     wd = new_task.diver
     while True:
         cur_time = datetime.datetime.now().strftime("%H:%M:%S")
-        if cur_time == '09:00:00':
-            logger('到九点都没开放')
         in_404 = new_task.judge_in_404()
         if not in_404:
-            new_task.send_email(cur_time + '终于开放了')
+            # new_task.send_email(cur_time + '终于开放了')
+            email_content += str(cur_time) + '终于开放了\n'
             break
         else:
-            time.sleep(300)
-            new_task.diver.refresh()
-            time.sleep(300)
-
+            new_task.jump(
+                'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
+            time.sleep(600)
     if not in_404:
-        time.sleep(5)
-        wd.switch_to.frame('formIframe')
-        new_task.complete_form('202036955', '王子豪')
-        new_task.complete_select(['16:00-17:30', '18:30-20:00', '20:00-21:30'])
-        if new_task.has_place:
-            # 切换回原来的主html
-            print('找到场地', new_task.find_place)
-            print('有球打了ohhhhhhhhhhhh')
-            new_task.send_email(new_task.order_res)
-            wd.switch_to.default_content()
-            wd.find_element(By.ID, 'commit').click()
-        else:
-            print('没球打了，洗洗睡吧')
+        for order_time in order_list:
+            time.sleep(5)
+            wd.switch_to.frame('formIframe')
+            # new_task.complete_form('202036955', '王子豪')
+            new_task.complete_select(order_time)
+            if new_task.has_place:
+                # 切换回原来的主html
+                print('找到场地', new_task.find_place)
+                print(new_task.order_res)
+                wd.switch_to.default_content()
+                wd.find_element(By.ID, 'commit').click()
+                wd.back()
+                time.sleep(1)
+                wd.forward()
+            else:
+                print('没球打了，洗洗睡吧')
+        print('有球打了ohhhhhhhhhhhh')
+        new_task.send_email(email_content + new_task.order_res)
 
     new_task.logout()
     wd.quit()

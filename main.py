@@ -124,27 +124,7 @@ class AutoOrder:
             wd.find_element(By.NAME, 'ok').click()
         wd.switch_to.frame('formIframe')
 
-    def confirm_time(self, place_opt, expect):
-        consultant_opts = self.get_opt_info('XZSYSD')
-        expect_full_info = place_opt + expect
-        if expect_full_info in consultant_opts:
-            expect_index = consultant_opts.index(expect_full_info)
-            wd.find_element(By.XPATH, "//button[@data-id='XZSYSD']").click()
-            wd.find_element(By.XPATH,
-                            "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
-                                expect_index + 1)).click()
-            self.has_place = True
-            self.find_place = expect_full_info
-            self.order_res += str(expect_full_info) + '\n'
-            logger('找到场地: 时间段{t}'.format(t=expect_full_info))
-            return True
-        else:
-            logger(place_opt + '没有想要的时间段了')
-            return False
-
-    def complete_select(self, expect, prefer=None):
-        if prefer is None:
-            prefer = ['8号场地']
+    def complete_select(self, expect):
         wd = self.driver
         time.sleep(1)
         scheduled_time_opts = self.get_opt_info('JHYYSJ')
@@ -160,23 +140,7 @@ class AutoOrder:
             place_opts = self.get_opt_info('FYCCBH')
             if len(place_opts) > 1:
                 place_opts.remove('')
-                # 先选想要的场地
-                for prefer_index in range(0, len(prefer)):
-                    print('优先选择预约场地%s' % prefer)
-                    prefer_opt = prefer[prefer_index]
-                    wd.find_element(By.XPATH, "//button[@data-id='FYCCBH']").click()
-                    wd.find_element(By.XPATH,
-                                    "//button[@data-id='FYCCBH']/following-sibling::div/ul/li[%s]" %
-                                    str(prefer_index + 2)).click()
-                    # 开始选择使用时间段
-                    time.sleep(1)
-                    time_res = self.confirm_time(prefer_opt, expect)
-                    if time_res:
-                        break
-
-                remove_pre = [scheduled_time_opt + '青岛校区' + place for place in prefer]
-                place_opts.remove(remove_pre)
-                for place_index in range(0, len(place_opts)):
+                for place_index in reversed(range(0, len(place_opts)-3)):
                     place_opt = place_opts[place_index]
                     print('选择预约场地%s' % place_opt)
                     wd.find_element(By.XPATH, "//button[@data-id='FYCCBH']").click()
@@ -185,9 +149,21 @@ class AutoOrder:
                                     str(place_index + 2)).click()
                     # 开始选择使用时间段
                     time.sleep(1)
-                    time_res = self.confirm_time(place_opt, expect)
-                    if time_res:
+                    consultant_opts = self.get_opt_info('XZSYSD')
+                    expect_full_info = place_opt + expect
+                    if expect_full_info in consultant_opts:
+                        expect_index = consultant_opts.index(expect_full_info)
+                        wd.find_element(By.XPATH, "//button[@data-id='XZSYSD']").click()
+                        wd.find_element(By.XPATH,
+                                        "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
+                                            expect_index + 1)).click()
+                        self.has_place = True
+                        self.find_place = expect_full_info
+                        self.order_res += str(expect_full_info) + '\n'
+                        logger('找到场地: 时间段{t}'.format(t=expect_full_info))
                         break
+                    else:
+                        logger(place_opt + '没有想要的时间段了')
             self.old_date = scheduled_time_opts
         
     def get_screenshot(self):
@@ -248,20 +224,17 @@ if __name__ == '__main__':
             # time.sleep(5)
             wd.switch_to.frame('formIframe')
             # new_task.complete_form('202036955', '王子豪')
-            prefer_place = ['8号场地', '9号场地', '7号场地']
-            new_task.complete_select(order_list[index], prefer_place)
+            new_task.complete_select(order_list[index],)
             if new_task.has_place:
                 # 切换回原来的主html
                 print('找到场地', new_task.find_place)
                 print(new_task.order_res)
                 wd.switch_to.default_content()
-                # wd.find_element(By.ID, 'commit').click()
+                wd.find_element(By.ID, 'commit').click()
                 print('申请了这块场地')
                 if index != len(order_list) - 1:
                     time.sleep(3)
                     wd.back()
-                    time.sleep(1)
-                    wd.forward()
             else:
                 print('没球打了，洗洗睡吧')
         print('有球打了ohhhhhhhhhhhh')

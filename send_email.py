@@ -38,7 +38,7 @@ class AutoEmail:
         send_image_file = open(img_path, 'rb').read()
         image = MIMEImage(send_image_file)
         image.add_header('Content-ID', '<image1>')
-        image["Content-Disposition"] = 'attachment; filename="result.png"'
+        image["Content-Disposition"] = 'attachment; filename="{}.png"'.format(str(self.temp_date.strftime("%Y-%m-%d")))
         self.msg.attach(image)
 
     def login_and_send(self, debug=False):

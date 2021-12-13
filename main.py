@@ -1,4 +1,5 @@
 import random
+import os
 from send_email import AutoEmail
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,9 +22,9 @@ def logger(content):
 
 class AutoOrder:
     def __init__(self, driver_path, email):
-        self.diver = webdriver.Chrome(driver_path)
+        self.driver = webdriver.Chrome(driver_path)
         self.email = email
-        self.diver.implicitly_wait(10)
+        self.driver.implicitly_wait(10)
         self.res = dict()
         self.order_res = ''
         self.has_place = False
@@ -35,7 +36,7 @@ class AutoOrder:
             登录部分
         """
         # 创建 WebDriver 对象，指明使用chrome浏览器驱动
-        wd = self.diver
+        wd = self.driver
         # 调用WebDriver 对象的get方法 可以让浏览器打开指定网址
         wd.get('https://pass.sdu.edu.cn/')
         # 根据id选择元素，返回的就是该元素对应的WebElement对象
@@ -49,15 +50,15 @@ class AutoOrder:
         """
              退出登录部分
          """
-        self.diver.get('https://scenter.sdu.edu.cn/tp_fp/logout')
+        self.driver.get('https://scenter.sdu.edu.cn/tp_fp/logout')
 
     def jump(self, url):
-        wd = self.diver
+        wd = self.driver
         wd.get(url)
         # 切换iframe
 
     def get_opt_info(self, select_ID):
-        wd = self.diver
+        wd = self.driver
         option_info = []
         select_ele = wd.find_element(By.ID, select_ID)
         select = Select(select_ele)
@@ -68,11 +69,11 @@ class AutoOrder:
             # print("Value is:%s " % (option.get_attribute("value")))
         return option_info
 
-    def send_email(self, content, img=''):
+    def send_email(self, content, email_img=''):
         self.email.create_email()
         self.email.add_content(content)
-        if img != '':
-            self.email.add_img(r'.\img\%s.png' % img)
+        if email_img != '':
+            self.email.add_img(r'.\img\%s.png' % email_img)
         self.email.login_and_send()
 
     def judge_in_404(self):
@@ -81,7 +82,7 @@ class AutoOrder:
         :return: result --> boolean
         """
         result = False
-        wd = self.diver
+        wd = self.driver
         try:
             if wd.find_element(By.CLASS_NAME, 'title-01').text == '服务不在有效期':
                 print()
@@ -95,7 +96,7 @@ class AutoOrder:
         return result
 
     def complete_form(self, number, name):
-        wd = self.diver
+        wd = self.driver
         wd.find_element(By.CLASS_NAME, 'swiper-slide-active').click()
         wd.switch_to.default_content()
         stu_number = wd.find_element(By.ID, 'XGH')
@@ -123,8 +124,28 @@ class AutoOrder:
             wd.find_element(By.NAME, 'ok').click()
         wd.switch_to.frame('formIframe')
 
-    def complete_select(self, expect):
-        wd = self.diver
+    def confirm_time(self, place_opt, expect):
+        consultant_opts = self.get_opt_info('XZSYSD')
+        expect_full_info = place_opt + expect
+        if expect_full_info in consultant_opts:
+            expect_index = consultant_opts.index(expect_full_info)
+            wd.find_element(By.XPATH, "//button[@data-id='XZSYSD']").click()
+            wd.find_element(By.XPATH,
+                            "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
+                                expect_index + 1)).click()
+            self.has_place = True
+            self.find_place = expect_full_info
+            self.order_res += str(expect_full_info) + '\n'
+            logger('找到场地: 时间段{t}'.format(t=expect_full_info))
+            return True
+        else:
+            logger(place_opt + '没有想要的时间段了')
+            return False
+
+    def complete_select(self, expect, prefer=None):
+        if prefer is None:
+            prefer = ['8号场地']
+        wd = self.driver
         time.sleep(1)
         scheduled_time_opts = self.get_opt_info('JHYYSJ')
         if len(scheduled_time_opts) > 1:
@@ -139,6 +160,22 @@ class AutoOrder:
             place_opts = self.get_opt_info('FYCCBH')
             if len(place_opts) > 1:
                 place_opts.remove('')
+                # 先选想要的场地
+                for prefer_index in range(0, len(prefer)):
+                    print('优先选择预约场地%s' % prefer)
+                    prefer_opt = prefer[prefer_index]
+                    wd.find_element(By.XPATH, "//button[@data-id='FYCCBH']").click()
+                    wd.find_element(By.XPATH,
+                                    "//button[@data-id='FYCCBH']/following-sibling::div/ul/li[%s]" %
+                                    str(prefer_index + 2)).click()
+                    # 开始选择使用时间段
+                    time.sleep(1)
+                    time_res = self.confirm_time(prefer_opt, expect)
+                    if time_res:
+                        break
+
+                remove_pre = [scheduled_time_opt + '青岛校区' + place for place in prefer]
+                place_opts.remove(remove_pre)
                 for place_index in range(0, len(place_opts)):
                     place_opt = place_opts[place_index]
                     print('选择预约场地%s' % place_opt)
@@ -148,22 +185,25 @@ class AutoOrder:
                                     str(place_index + 2)).click()
                     # 开始选择使用时间段
                     time.sleep(1)
-                    consultant_opts = self.get_opt_info('XZSYSD')
-                    expect_full_info = place_opt + expect
-                    if expect_full_info in consultant_opts:
-                        expect_index = consultant_opts.index(expect_full_info)
-                        wd.find_element(By.XPATH, "//button[@data-id='XZSYSD']").click()
-                        wd.find_element(By.XPATH,
-                                        "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
-                                            expect_index + 1)).click()
-                        self.has_place = True
-                        self.find_place = expect_full_info
-                        self.order_res += str(expect_full_info) + '\n'
-                        logger('找到场地: 时间段{t}'.format(t=expect_full_info))
+                    time_res = self.confirm_time(place_opt, expect)
+                    if time_res:
                         break
-                    else:
-                        logger(place_opt + '没有想要的时间段了')
             self.old_date = scheduled_time_opts
+        
+    def get_screenshot(self):
+        time.sleep(5)
+        try:
+            '''
+            调用get_screenshot_as_file(filename)方法，对浏览器当前打开页面
+            进行截图,并保为e盘下的screenPicture.png文件。
+            '''
+            img_name = datetime.datetime.now().strftime("%Y-%m-%d")
+            result = self.driver.get_screenshot_as_file('./img/{}.png'.format(str(img_name)))
+            if result:
+                print('截图保存成功')
+                return img_name
+        except IOError as e:
+            print(e)
 
 
 if __name__ == '__main__':
@@ -175,51 +215,62 @@ if __name__ == '__main__':
         password='ETTTWIGAEHOJSRAP'
     )
     login_info = [
-        ['201936225', 'Zz837868!'], # 0
-        ['202034533', 'wuweimeng123'], # 0
-        ['202036955', 'wzh168169'], # 0
-        ['202016948', 'ladida52459'], # 0
-        ['202016944', 'gsk199938'], # 0
-        ['202016949', '.980206zxh.'] # 0
+        ['201936225', 'Zz837868!'],     # 周一
+        ['202034533', 'wuweimeng123'],  # 周二
+        ['202036955', 'wzh168169'],     # 周三
+        ['202016948', 'ladida52459'],   # 周四
+        ['202016944', 'gsk199938'],     # 周五
+        ['202016949', '.980206zxh.']    # 周六
     ]
     email_content = ''
     new_task = AutoOrder(r'E:\driver\chromedriver.exe', email_module)
-    order_list = ['16:00-17:30']
+    # order_list = ['16:00-17:30']
+    order_list = ['8:00-9:30']
     today = datetime.datetime.now().weekday()
     new_task.login(login_info[today][0], login_info[today][1])
     new_task.jump(
         'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
-    wd = new_task.diver
-    while True:
-        cur_time = datetime.datetime.now().strftime("%H:%M:%S")
-        in_404 = new_task.judge_in_404()
-        if not in_404:
-            # new_task.send_email(cur_time + '终于开放了')
-            email_content += str(cur_time) + '终于开放了\n'
-            break
-        else:
-            new_task.jump(
-                'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
-            time.sleep(600)
+    wd = new_task.driver
+    in_404 = False
+    # while True:
+    #     cur_time = datetime.datetime.now().strftime("%H:%M:%S")
+    #     in_404 = new_task.judge_in_404()
+    #     if not in_404:
+    #         # new_task.send_email(cur_time + '终于开放了')
+    #         email_content += str(cur_time) + '终于开放了\n'
+    #         break
+    #     else:
+    #         new_task.jump(
+    #             'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
+    #         time.sleep(600)
     if not in_404:
-        for order_time in order_list:
-            time.sleep(5)
+        for index in range(len(order_list)):
+            # time.sleep(5)
             wd.switch_to.frame('formIframe')
             # new_task.complete_form('202036955', '王子豪')
-            new_task.complete_select(order_time)
+            prefer_place = ['8号场地', '9号场地', '7号场地']
+            new_task.complete_select(order_list[index], prefer_place)
             if new_task.has_place:
                 # 切换回原来的主html
                 print('找到场地', new_task.find_place)
                 print(new_task.order_res)
                 wd.switch_to.default_content()
-                wd.find_element(By.ID, 'commit').click()
-                wd.back()
-                time.sleep(1)
-                wd.forward()
+                # wd.find_element(By.ID, 'commit').click()
+                print('申请了这块场地')
+                if index != len(order_list) - 1:
+                    time.sleep(3)
+                    wd.back()
+                    time.sleep(1)
+                    wd.forward()
             else:
                 print('没球打了，洗洗睡吧')
         print('有球打了ohhhhhhhhhhhh')
-        new_task.send_email(email_content + new_task.order_res)
 
+    new_task.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
+    if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
+        img = new_task.get_screenshot()
+        new_task.send_email(email_content + new_task.order_res, img)
+    else:
+        new_task.send_email(email_content + new_task.order_res)
     new_task.logout()
     wd.quit()

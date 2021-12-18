@@ -131,7 +131,7 @@ class AutoOrder:
         if len(scheduled_time_opts) > 1:
             scheduled_time_opts.remove('')
             scheduled_time_opt = scheduled_time_opts[len(scheduled_time_opts) - 1]
-            print('选择预约时间%s' % scheduled_time_opt)
+            print('选择预约时间%s' % scheduled_time_opt+expect)
             wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']").click()
             wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']/following-sibling::div/ul/li[%s]" %
                             str(len(scheduled_time_opts) + 1)).click()
@@ -167,12 +167,12 @@ class AutoOrder:
             self.old_date = scheduled_time_opts
         
     def get_screenshot(self):
-        time.sleep(5)
         try:
             '''
             调用get_screenshot_as_file(filename)方法，对浏览器当前打开页面
             进行截图,并保为e盘下的screenPicture.png文件。
             '''
+            time.sleep(5)
             img_name = datetime.datetime.now().strftime("%Y-%m-%d")
             result = self.driver.get_screenshot_as_file('./img/{}.png'.format(str(img_name)))
             if result:
@@ -191,17 +191,19 @@ if __name__ == '__main__':
         password='ETTTWIGAEHOJSRAP'
     )
     login_info = [
-        ['201936225', 'Zz837868!'],     # 周一
-        ['202034533', 'wuweimeng123'],  # 周二
-        ['202036955', 'wzh168169'],     # 周三
-        ['202016948', 'ladida52459'],   # 周四
-        ['202016944', 'gsk199938'],     # 周五
-        ['202016949', '.980206zxh.']    # 周六
+            # 周一 2
+        ['202034533', 'wuweimeng123'],  # 周二 0
+        ['202036955', 'wzh168169'],
+        ['201936225', 'Zz837868!'], # 周三 0
+        ['201916202', 'dzthang96102'],
+        ['202016948', 'ladida52459'],   # 周四 0
+        ['202016944', 'gsk199938'],     # 周五 0
+        ['202016949', '.980206zxh.']    # 周六 3
     ]
     email_content = ''
     new_task = AutoOrder(r'E:\driver\chromedriver.exe', email_module)
-    # order_list = ['16:00-17:30']
-    order_list = ['8:00-9:30']
+    order_list = ['20:00-21:30', '18:30-20:00', '16:00-17:30']
+    # order_list = ['8:00-9:30']
     today = datetime.datetime.now().weekday()
     new_task.login(login_info[today][0], login_info[today][1])
     new_task.jump(
@@ -223,7 +225,7 @@ if __name__ == '__main__':
         for index in range(len(order_list)):
             # time.sleep(5)
             wd.switch_to.frame('formIframe')
-            # new_task.complete_form('202036955', '王子豪')
+            new_task.complete_form('202036955', '王子豪')
             new_task.complete_select(order_list[index],)
             if new_task.has_place:
                 # 切换回原来的主html
@@ -232,12 +234,13 @@ if __name__ == '__main__':
                 wd.switch_to.default_content()
                 wd.find_element(By.ID, 'commit').click()
                 print('申请了这块场地')
+                print('有球打了ohhhhhhhhhhhh')
                 if index != len(order_list) - 1:
                     time.sleep(3)
                     wd.back()
             else:
+                wd.switch_to.default_content()
                 print('没球打了，洗洗睡吧')
-        print('有球打了ohhhhhhhhhhhh')
 
     new_task.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
     if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':

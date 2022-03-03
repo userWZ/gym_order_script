@@ -23,7 +23,8 @@ class AutoEmail:
         # 主题
         """**主题如果是纯中文或纯英文则字符数必须大于等于5个，
         不然会报错554 SPM被认为是垃圾邮件或者病毒** """
-        subject = str(self.temp_date.strftime("%Y-%m-%d")) + '预约结果'
+        delta = datetime.timedelta(days=3)
+        subject = str(self.temp_date.strftime("%Y-%m-%d")) +'周'+str((self.temp_date + delta).weekday()) + '预约结果'
         # 内容
 
         self.msg['Subject'] = Header(subject, 'utf-8')
@@ -70,6 +71,6 @@ if __name__ == '__main__':
         password='ETTTWIGAEHOJSRAP'
     )
     result_email.create_email()
-    images = ['.\\img\\2022-03-02-1.png', '.\\img\\2022-03-02-2.png']
+    images = ['.\\img\\202203022.png', '.\\img\\202203022.png']
     result_email.add_img(images)
     result_email.login_and_send()

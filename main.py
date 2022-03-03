@@ -135,7 +135,7 @@ class AutoOrder:
         if len(scheduled_time_opts) > 1:
             scheduled_time_opts.remove('')
             scheduled_time_opt = scheduled_time_opts[len(scheduled_time_opts) - 1]
-            print('选择预约时间%s' % scheduled_time_opt+expect)
+            print('选择预约时间%s' % scheduled_time_opt+' '+expect)
             wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']").click()
             wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']/following-sibling::div/ul/li[%s]" %
                             str(len(scheduled_time_opts) + 1)).click()
@@ -178,7 +178,7 @@ class AutoOrder:
                         else:
                             logger(place_opt + '没有想要的时间段了')
                     else:
-                        print('今天没有'+ str(place_index) + '号场地')
+                        print('今天没有' + str(place_index) + '号场地')
                         continue
         
     def get_screenshot(self):
@@ -187,12 +187,13 @@ class AutoOrder:
         调用get_screenshot_as_file(filename)方法，对浏览器当前打开页面
         进行截图,并保为e盘下的screenPicture.png文件。
         '''
-        time.sleep(5)
-        img_name = datetime.datetime.now().strftime("%Y-%m-%d") + '-' + str(self.order_number)
-        result = self.driver.get_screenshot_as_file(u'.\\img\\%s.png' % img_name)
+        img_name = datetime.datetime.now().strftime("%Y%m%d") + 'p' + str(self.order_number)
+        result = self.driver.get_screenshot_as_file(u'G:\\auto_order\\img\\%s.png' % img_name)
         if result:
             print('截图保存成功')
-            self.img.append(u'.\\img\\%s.png' % img_name)
+            self.img.append(r'G:\auto_order\img\%s.png' % img_name)
+        else:
+            print('截图失败')
 
     def order(self, order_list):
         self.jump(
@@ -208,18 +209,16 @@ class AutoOrder:
                 wd.switch_to.default_content()
                 wd.find_element(By.ID, 'commit').click()
                 if index != len(order_list) - 1:
-                    time.sleep(3)
+                    time.sleep(2)
                     wd.back()
             else:
                 wd.switch_to.default_content()
                 print(order_list[index]+'没球打了，洗洗睡吧')
         self.order_number += 1
         self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
-        time.sleep(5)
+        time.sleep(3)
         if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
             self.get_screenshot()
-            print('截图成功')
-
         self.logout()
 
 
@@ -240,9 +239,10 @@ if __name__ == '__main__':
         new_task.login(order_info[0][i][0], order_info[0][i][1])
         new_task.order(order_info[1][i])
         new_task.logout()
-        time.sleep(5)
+        time.sleep(1)
     if new_task.order_res == '':
-        new_task.send_email('周'+str(today)+'没有球打了')
+        delta = datetime.timedelta(days=3)
+        new_task.send_email('周'+str((datetime.datetime.now()+delta).weekday())+'没有球打了')
     else:
         new_task.send_email(email_content + new_task.order_res, new_task.img)
-    new_task.driver.quit()
+        new_task.driver.quit()

@@ -24,7 +24,7 @@ class AutoEmail:
         """**主题如果是纯中文或纯英文则字符数必须大于等于5个，
         不然会报错554 SPM被认为是垃圾邮件或者病毒** """
         delta = datetime.timedelta(days=3)
-        subject = str(self.temp_date.strftime("%Y-%m-%d")) +'周'+str((self.temp_date + delta).weekday()) + '预约结果'
+        subject = str(self.temp_date.strftime("%Y-%m-%d")) +'周'+str((self.temp_date + delta).weekday()+1) + '预约结果'
         # 内容
 
         self.msg['Subject'] = Header(subject, 'utf-8')

@@ -1,9 +1,12 @@
 import random
 import os
+
+import info
 from send_email import AutoEmail
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.chrome.options import Options
 from info import *
 import time
 import datetime
@@ -15,7 +18,6 @@ init_name = ['马化腾', '耿妙妙', '劳洁玉', '高皓月', '孙忆远', '�
              '方凯康', '陆和安', '屠宏胜', '靳雅惠', '郝修诚', '李晗昱', '邹鹏翼', '漕俊民', '吴鸿信', '益安民', '赖温文', '尚弘伟',
              '芮修远', '满阳文', '陆永思', '容远航', '糜兴贤', '聂和泽', '芮坚秉', '白浩瀚', '班安平', '靳乐语', '邹哲茂', '姚正文']
 
-
 def logger(content):
     logger_content = '================ ({time}) {content} ================' \
         .format(time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), content=content)
@@ -23,16 +25,28 @@ def logger(content):
 
 
 class AutoOrder:
-    def __init__(self, driver_path, email):
-        self.driver = webdriver.Chrome(driver_path)
+    def __init__(self, driver_path, email, preference, display=False, send_img=False):
+        if display:
+            self.driver = webdriver.Chrome(driver_path)
+        else:
+            # 无界面运行，不显示浏览器
+            chrome_options = Options()
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            # 不启动界面显示- linux下命令行模式必须启用
+            chrome_options.add_argument('--headless')
+            self.driver = webdriver.Chrome(driver_path, options=chrome_options)
         self.email = email
         self.driver.implicitly_wait(10)
         self.res = dict()
-        self.order_res = ''
+        self.order_res = []
         self.has_place = False
         self.find_place = ''
         self.order_number = 0
         self.img = []
+        self.open_time = ''
+        self.preference = preference,
+        self.send_img = send_img
 
     def login(self, un, pd):
         """
@@ -41,7 +55,7 @@ class AutoOrder:
         # 创建 WebDriver 对象，指明使用chrome浏览器驱动
         wd = self.driver
         # 调用WebDriver 对象的get方法 可以让浏览器打开指定网址
-        wd.get('https://pass.sdu.edu.cn/')
+        wd.get('https://pass.sdu.edu.cn/cas/login?service=https%3A%2F%2Fservice.sdu.edu.cn%2Ftp_up%2F')
         # 根据id选择元素，返回的就是该元素对应的WebElement对象
         username = wd.find_element(By.ID, 'un')
         password = wd.find_element(By.ID, 'pd')
@@ -84,19 +98,18 @@ class AutoOrder:
         判断是否是在404界面
         :return: result --> boolean
         """
-        result = False
         wd = self.driver
         try:
-            if wd.find_element(By.CLASS_NAME, 'title-01').text == '服务不在有效期':
-                print()
-                logger('当前时间还没有开放预约')
-                result = True
-            else:
-                email_content = '预约开放时间{time}'.format(time=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-                self.send_email(email_content)
+            wd.find_element(By.CLASS_NAME, 'building-box')
+            print('当前预约没有开放')
+            self.open_time = 'wait'
+            return True
         except:
-            pass
-        return result
+            print('预约开放了')
+            if self.open_time == 'wait':
+                self.open_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                # self.send_email('预约开放时间' + self.open_time)
+            return False
 
     def complete_form(self, number, name):
         wd = self.driver
@@ -135,7 +148,7 @@ class AutoOrder:
         if len(scheduled_time_opts) > 1:
             scheduled_time_opts.remove('')
             scheduled_time_opt = scheduled_time_opts[len(scheduled_time_opts) - 1]
-            print('选择预约时间%s' % scheduled_time_opt+' '+expect)
+            print('选择预约时间%s' % scheduled_time_opt + ' ' + expect)
             wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']").click()
             wd.find_element(By.XPATH, "//button[@data-id='JHYYSJ']/following-sibling::div/ul/li[%s]" %
                             str(len(scheduled_time_opts) + 1)).click()
@@ -156,10 +169,10 @@ class AutoOrder:
                         place_opt = place_opts[order_number]
                         print('选择预约场地%s' % place_opt)
                         wd.find_element(By.XPATH, "//button[@data-id='FYCCBH']").click()
-                        #拿到可预约的场地列表
+                        # 拿到可预约的场地列表
                         wd.find_element(By.XPATH,
                                         "//button[@data-id='FYCCBH']/following-sibling::div/ul/li[%s]" %
-                                        str(order_number+2)).click()
+                                        str(order_number + 2)).click()
                         # 开始选择使用时间段
                         time.sleep(1)
                         consultant_opts = self.get_opt_info('XZSYSD')
@@ -170,19 +183,19 @@ class AutoOrder:
                             wd.find_element(By.XPATH,
                                             "//button[@data-id='XZSYSD']/following-sibling::div/ul/li[%s]" % str(
                                                 expect_index + 1)).click()
-                            self.has_place = True
+                            self.has_place = place_index
                             self.find_place = expect_full_info
-                            self.order_res += str(expect_full_info) + '\n'
+                            self.order_res.append(str(expect_full_info) + '\n')
                             logger('找到场地: 时间段{t}'.format(t=expect_full_info))
                             break
                         else:
                             logger(place_opt + '没有想要的时间段了')
                     else:
                         print('今天没有' + str(place_index) + '号场地')
+                        self.preference.remove(place_index)
                         continue
-        
-    def get_screenshot(self):
 
+    def get_screenshot(self):
         '''
         调用get_screenshot_as_file(filename)方法，对浏览器当前打开页面
         进行截图,并保为e盘下的screenPicture.png文件。
@@ -196,30 +209,45 @@ class AutoOrder:
             print('截图失败')
 
     def order(self, order_list):
+        wd = self.driver
+        time.sleep(1)
         self.jump(
             'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
-        wd = self.driver
+        while self.judge_in_404():
+            time.sleep(10)
+            self.jump(
+                'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
         for index in range(len(order_list)):
             wd.switch_to.frame('formIframe')
             self.complete_select(order_list[index])
-            if self.has_place:
+            if self.has_place != -1:
                 # 切换回原来的主html
                 print('找到场地', self.find_place)
-                print(self.order_res)
                 wd.switch_to.default_content()
                 wd.find_element(By.ID, 'commit').click()
+                try:
+                    alert = wd.switch_to.alert
+                    if alert.text == '该时间段已被占用，请选择其他时间':
+                        # 预约失败，重新回去预约
+                        print('预约失败, 被别人抢用了')
+                        alert.accept()
+                        self.order_res.pop()
+                except:
+                    print('预约成功')
+                    self.has_place = -1
                 if index != len(order_list) - 1:
                     time.sleep(2)
                     wd.back()
             else:
                 wd.switch_to.default_content()
-                print(order_list[index]+'没球打了，洗洗睡吧')
+                print(order_list[index] + '没球打了，洗洗睡吧')
         self.order_number += 1
-        self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
-        time.sleep(3)
-        if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
-            self.get_screenshot()
-        self.logout()
+        if self.send_img:
+            self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
+            time.sleep(3)
+            if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
+                self.get_screenshot()
+            self.logout()
 
 
 if __name__ == '__main__':
@@ -233,16 +261,23 @@ if __name__ == '__main__':
     email_content = ''
 
     today = datetime.datetime.now().weekday()
-    order_info = [login_info[today], order_list[today]]
-    new_task = AutoOrder(r'G:\auto_order\chromedriver.exe', email_module)
-    for i in range(len(order_info[0])):
-        new_task.login(order_info[0][i][0], order_info[0][i][1])
-        new_task.order(order_info[1][i])
+    user_info = info.login_info[today] # 登录信息
+    order_list = info.order_list[today] # 预约列表信息
+    new_task = AutoOrder(r'G:\auto_order\chromedriver.exe', email_module, info.preference)
+    for i in range(len(user_info)):
+        new_task.login(user_info[i][0], user_info[i][1])
+        new_task.order(order_list[i])
         new_task.logout()
         time.sleep(1)
-    if new_task.order_res == '':
+    if new_task.order_res == []:
         delta = datetime.timedelta(days=3)
-        new_task.send_email('周'+str((datetime.datetime.now()+delta).weekday())+'没有球打了')
+        new_task.send_email('周' + str((datetime.datetime.now() + delta).weekday() + 1) + '没有球打了')
     else:
-        new_task.send_email(email_content + new_task.order_res, new_task.img)
+        # new_task.login(order_info[0][0][0], order_info[0][0][1])
+        # new_task.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
+        # time.sleep(3)
+        # if new_task.driver.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
+        #     new_task.get_screenshot()
+        order_account = '/n'+ '预约账号: ' + " ".join([i[2] for i in user_info]) + '\n'
+        new_task.send_email(email_content + " ".join(new_task.order_res), new_task.img)
         new_task.driver.quit()

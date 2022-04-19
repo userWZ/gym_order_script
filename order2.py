@@ -287,7 +287,7 @@ if __name__ == '__main__':
                          email_module,
                          preference=info.preference,
                          display=True)
-    ll = ['202016944', 'gsk199938']
+    ll = ['201916207', 'my412427']
     new_task.login(ll[0], ll[1])
     new_task.get_place_info()
     check_status = new_task.check_place_status()

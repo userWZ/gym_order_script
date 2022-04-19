@@ -1,0 +1,365 @@
+{
+	"header": {
+		"code": 0,
+		"message": {
+			"title": "",
+			"detail": ""
+		}
+	},
+	"body": {
+		"dataStores": {
+			"8ccd29da-6b69-46d4-b72f-55bde180_record": {
+				rowSet: {
+					"primary": [{
+						"pk_id": "rowid_0TGPHLK6U3TRDEN1K34OA4BUC",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "1",
+						"XGH": "1",
+						"fk_id": "2204191826376432"
+					}, {
+						"pk_id": "rowid_O7V7T9ALGL21CNQGKKJ8K5I7S",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "2",
+						"XGH": "2",
+						"fk_id": "2204191826376432"
+					}, {
+						"pk_id": "rowid_3VE4SK44NH44MNEUC2V0UPBLV",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "3",
+						"XGH": "3",
+						"fk_id": "2204191826376432"
+					}, {
+						"pk_id": "rowid_IL5QJ1JTTQ2MHU8I4TTDJHCTH",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "4",
+						"XGH": "4",
+						"fk_id": "2204191826376432"
+					}],
+					"filter": [],
+					"delete": []
+				},
+				"name": "8ccd29da-6b69-46d4-b72f-55bde180_record",
+				"pageNumber": 1,
+				"pageSize": 2147483647,
+				"recordCount": 0,
+				"rowSetName": "8e25fc01-dee0-4560-9883-02b505d2",
+				"parameters": {
+					"exist": true,
+					"relatedcontrols": "grid_0",
+					"primarykey": "pk_id",
+					"queryds": "8ccd29da-6b69-46d4-b72f-55bde180"
+				}
+			},
+			"uploader_grid_grid_0": {
+				rowSet: {
+					"primary": [],
+					"filter": [],
+					"delete": []
+				},
+				name: "uploader_grid_grid_0",
+				pageNumber: 1,
+				pageSize: 2147483647,
+				recordCount: 0,
+				rowSetName: "uploader_grid_grid_0",
+				parameters: {
+					"grid_name": "使用人员"
+				}
+			},
+			"dbe32bfd-920a-4bb0-b077-c5444402_record": {
+				rowSet: {
+					"primary": [{
+						"SYRS": "4",
+						"FYCCBH": "2022-04-22青岛校区10号场地",
+						"pk_id": "3863061e:1803b813211:356d",
+						"SZXQ": "青岛校区",
+						"QTLX": "",
+						"YCHYQYY": "",
+						"XZSYSD_TEXT": "8:00-9:30",
+						"KNLX": "",
+						"JHYYSJ": "2022-04-22",
+						"XZXQ": "2022-04-22青岛校区",
+						"JHYYSJ_TEXT": "2022-04-22",
+						"YCGDZ": "",
+						"fk_id": "2204191826376432",
+						"text": "",
+						"XZXQ_TEXT": "青岛校区",
+						"SYCD": "10号场地",
+						"SQCS": "0",
+						"ZXSGH": "",
+						"KNLXGDZ": "",
+						"XH": "202036957",
+						"FYCCBH_TEXT": "10号场地",
+						"ZJ": "",
+						"XYKNGDZ": "",
+						"PD": "0",
+						"XM": "杨彬",
+						"SYNF": "2022",
+						"SYZQ": "2022-04-22",
+						"XZSYSD": "2022-04-22青岛校区10号场地8:00-9:30"
+					}],
+					"filter": [],
+					"delete": []
+				},
+				name: "dbe32bfd-920a-4bb0-b077-c5444402_record",
+				pageNumber: 1,
+				pageSize: 2147483647,
+				recordCount: 0,
+				rowSetName: "876aa03d-070b-4551-8c52-a5c24361",
+				parameters: {
+					"exist": true,
+					"relatedcontrols": "body_0",
+					"primarykey": "pk_id",
+					"queryds": "dbe32bfd-920a-4bb0-b077-c5444402"
+				}
+			},
+			"variable": {
+				rowSet: {
+					"primary": [{
+						"name": "JHYYSJ",
+						"source": "process",
+						"type": "string",
+						"value": "2022-04-22",
+						"_t": 1,
+						_o: {
+							"value": ""
+						}
+					}, {
+						"name": "XH",
+						"source": "process",
+						"type": "string",
+						"value": "202036957",
+						"_t": 1,
+						_o: {
+							"value": ""
+						}
+					}, {
+						"name": "XM",
+						"source": "process",
+						"type": "string",
+						"value": "杨彬",
+						"_t": 1,
+						_o: {
+							"value": ""
+						}
+					}, {
+						"name": "CD",
+						"source": "process",
+						"type": "string",
+						"value": "11号场地",
+						"_t": 1,
+						_o: {
+							"value": ""
+						}
+					}, {
+						"name": "XZSD",
+						"source": "process",
+						"type": "string",
+						"value": "8:00-9:30",
+						"_t": 1,
+						_o: {
+							"value": ""
+						}
+					}, {
+						"name": "BUSINESS_UNIT",
+						"source": "process",
+						"type": "string",
+						"value": ""
+					}, {
+						"name": "SYRS",
+						"source": "process",
+						"type": "string",
+						"value": "4",
+						"_t": 1,
+						_o: {
+							"value": ""
+						}
+					}, {
+						"name": "SYS_USER",
+						"source": "interface",
+						"type": "string",
+						"value": "杨彬"
+					}, {
+						"name": "SYS_UNIT",
+						"source": "interface",
+						"type": "string",
+						"value": "海洋研究院 "
+					}, {
+						"name": "SYS_DATE",
+						"source": "interface",
+						"type": "date",
+						"value": "1650366271906"
+					}, {
+						"name": "1189060d-4465-4b53-89c2-c9f88457.ID_NUMBER",
+						"value": "202036957"
+					}, {
+						"name": "1189060d-4465-4b53-89c2-c9f88457.USER_NAME",
+						"value": "杨彬"
+					}, {
+						"name": "666d8a60-7108-4681-829d-545841c3.XQ",
+						"value": "青岛校区"
+					}],
+					"filter": [],
+					"delete": []
+				},
+				name: "variable",
+				pageNumber: 1,
+				pageSize: 2147483647,
+				recordCount: 0,
+				parameters: {}
+			},
+			"8ccd29da-6b69-46d4-b72f-55bde180": {
+				rowSet: {
+					"primary": [{
+						"pk_id": "rowid_TN268N31VL7R9GES4VTJRA77B",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "1",
+						"XGH": "1",
+						"fk_id": "2204191826376432",
+						"_t": 1
+					}, {
+						"pk_id": "rowid_K3JU0VM4Q2IC1VOQDR35RA41K",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "2",
+						"XGH": "2",
+						"fk_id": "2204191826376432",
+						"_t": 1
+					}, {
+						"pk_id": "rowid_QQKCT17CCCHRARIGROLOCEPL9",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "3",
+						"XGH": "3",
+						"fk_id": "2204191826376432",
+						"_t": 1
+					}, {
+						"pk_id": "rowid_009GFMQVFG7SM1I06V7TLLUM4",
+						"SF_TEXT": "学生",
+						"SF": "学生",
+						"XM": "4",
+						"XGH": "4",
+						"fk_id": "2204191826376432",
+						"_t": 1
+					}],
+					"filter": [],
+					"delete": []
+				},
+				name: "8ccd29da-6b69-46d4-b72f-55bde180",
+				pageNumber: 1,
+				pageSize: 2147483647,
+				recordCount: 4,
+				parameters: {
+					"relatedcontrols": "grid_0",
+					"primarykey": "pk_id",
+					"queryds": "8ccd29da-6b69-46d4-b72f-55bde180",
+					"gridds": "true"
+				}
+			},
+			"uploader_grid_grid_0_record": {
+				rowSet: {
+					"primary": [],
+					"filter": [],
+					"delete": []
+				},
+				name: "uploader_grid_grid_0_record",
+				pageNumber: 1,
+				pageSize: 2147483647,
+				recordCount: 0,
+				rowSetName: "uploader_grid_grid_0",
+				parameters: {}
+			},
+			"dbe32bfd-920a-4bb0-b077-c5444402": {
+				rowSet: {
+					"primary": [{
+						"XH": "202036957",
+						"_t": 3,
+						"XM": "杨彬",
+						"JHYYSJ_TEXT": "2022-04-22",
+						"JHYYSJ": "2022-04-22",
+						"XZXQ_TEXT": "青岛校区",
+						"XZXQ": "2022-04-22青岛校区",
+						"FYCCBH_TEXT": "11号场地",
+						"FYCCBH": "2022-04-22青岛校区11号场地",
+						"XZSYSD_TEXT": "8:00-9:30",
+						"XZSYSD": "2022-04-22青岛校区11号场地8:00-9:30",
+						"PD": "0",
+						"text": "",
+						"SZXQ": "青岛校区",
+						"ZJ": "",
+						"ZXSGH": "",
+						"XYKNGDZ": "",
+						"KNLXGDZ": "",
+						"KNLX": "",
+						"QTLX": "",
+						"YCGDZ": "",
+						"YCHYQYY": "",
+						"SYRS": "4",
+						"SYZQ": "2022-04-22",
+						"SYNF": "2022",
+						"SYCD": "11号场地",
+						"SQCS": "1",
+						_o: {
+							"XH": null,
+							"XM": null,
+							"JHYYSJ_TEXT": null,
+							"JHYYSJ": null,
+							"XZXQ_TEXT": null,
+							"XZXQ": null,
+							"FYCCBH_TEXT": null,
+							"FYCCBH": null,
+							"XZSYSD_TEXT": null,
+							"XZSYSD": null,
+							"PD": null,
+							"text": null,
+							"SZXQ": null,
+							"ZJ": null,
+							"ZXSGH": null,
+							"XYKNGDZ": null,
+							"KNLXGDZ": null,
+							"KNLX": null,
+							"QTLX": null,
+							"YCGDZ": null,
+							"YCHYQYY": null,
+							"SYRS": null,
+							"SYZQ": null,
+							"SYNF": null,
+							"SYCD": null,
+							"SQCS": null
+						}
+					}],
+					"filter": [],
+					"delete": []
+				},
+				name: "dbe32bfd-920a-4bb0-b077-c5444402",
+				pageNumber: 1,
+				pageSize: 2147483647,
+				recordCount: 1,
+				rowSetName: "876aa03d-070b-4551-8c52-a5c24361",
+				parameters: {
+					"relatedcontrols": "body_0",
+					"primarykey": "pk_id",
+					"queryds": "dbe32bfd-920a-4bb0-b077-c5444402"
+				}
+			}
+		},
+
+		"parameters": {
+			"formid": "408225d8-1abe-4cdd-8a0d-fd8b1c6f",
+			"status": "select",
+			"privilegeId": "711549755616fbc517757f5036364348",
+			"seqId": "",
+			"service_id": "755b2443-dda6-47b6-ba0c-13f5f1e39574",
+			"process": "2ff0b7de-9c31-4898-94ac-adfd3e3eebca",
+			"seqPid": "",
+			"record_fk": "2204191826376432",
+			"strUserId": "",
+			"strUserIdCC": "",
+			"nextActId": ""
+		}
+	}
+}

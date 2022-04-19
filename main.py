@@ -18,6 +18,7 @@ init_name = ['马化腾', '耿妙妙', '劳洁玉', '高皓月', '孙忆远', '�
              '方凯康', '陆和安', '屠宏胜', '靳雅惠', '郝修诚', '李晗昱', '邹鹏翼', '漕俊民', '吴鸿信', '益安民', '赖温文', '尚弘伟',
              '芮修远', '满阳文', '陆永思', '容远航', '糜兴贤', '聂和泽', '芮坚秉', '白浩瀚', '班安平', '靳乐语', '邹哲茂', '姚正文']
 order_page_url = 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply'
+commit_url = 'https://scenter.sdu.edu.cn/tp_fp/formParser?status=update&formid=408225d8-1abe-4cdd-8a0d-fd8b1c6f&workflowAction=startProcess&seqId=&unitId=&workitemid=&process=2ff0b7de-9c31-4898-94ac-adfd3e3eebca'
 
 def logger(content):
     logger_content = '================ ({time}) {content} ================' \
@@ -199,7 +200,6 @@ class AutoOrder:
                         continue
 
     def get_screenshot(self):
-
         '''
         调用get_screenshot_as_file(filename)方法，对浏览器当前打开页面
         进行截图,并保为e盘下的screenPicture.png文件。
@@ -229,14 +229,24 @@ class AutoOrder:
                 self.place_info[item['NAME']].append(index)
         return place_info
 
+    def check_place_status(self):
+        status_json = {
+            "presetKey": "310499157438464",
+            "param": {"XZSYSD": "2022-04-20青岛校区8号场地16:00-17:30"}
+        }
+        res = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/Uniformcommon/selectOnePresetData', json=status_json)
+        return res
+
     def order(self, order_list):
         wd = self.driver
         system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
                                         json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
-        while system_open.text != 0:
+        while system_open.text != '0':
             print('系统还没开放')
             system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
                                             json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
+        print('系统开放了')
+        time.sleep(1)
         self.jump(order_page_url)
         self.get_place_info()
         for index in range(len(order_list)):
@@ -245,7 +255,6 @@ class AutoOrder:
             if self.has_place:
                 # 切换回原来的主html
                 print('找到场地', self.find_place)
-                print(self.order_res)
                 wd.switch_to.default_content()
                 wd.find_element(By.ID, 'commit').click()
                 if index != len(order_list) - 1:
@@ -255,11 +264,12 @@ class AutoOrder:
                 wd.switch_to.default_content()
                 print(order_list[index] + '没球打了，洗洗睡吧')
         self.order_number += 1
-        self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
-        time.sleep(3)
-        if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
-            self.get_screenshot()
-        self.logout()
+        if self.send_img:
+            self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
+            time.sleep(3)
+            if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
+                self.get_screenshot()
+            self.logout()
 
 
 if __name__ == '__main__':
@@ -273,7 +283,13 @@ if __name__ == '__main__':
     email_content = ''
     today = datetime.datetime.now().weekday()
     order_info = [info.login_info[today], info.order_list[today]]
-    new_task = AutoOrder(r'D:\python\auto_order\chromedriver.exe', email_module, preference=info.preference)
-    new_task.login(order_info[0][1][0], order_info[0][1][1])
+    new_task = AutoOrder(r'G:\auto_order\chromedriver.exe',
+                         email_module,
+                         preference=info.preference,
+                         display=True)
+    ll = ['202036957', 'yb199692']
+    new_task.login(ll[0], ll[1])
     new_task.get_place_info()
+    check_status = new_task.check_place_status()
+    res = new_task.session.post(url=commit_url, json=info.json)
     new_task.order(order_info[0][0][0])

@@ -1,39 +1,36 @@
 # auto_order
 
 #### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+一个简单的脚本案例
 
 #### 软件架构
-软件架构说明
+- 基于Python3
+- img 用于存储结果图片
+- task 用于创建自己的约场任务
+- main.py 核心程序
+- send_email.py 发送邮件模块
 
 
 #### 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1. 根据自己的chrome浏览器配置好chromedriver下载程序目录下
+2. pip install -r requirements.txt
 
 #### 使用说明
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+1. 在main文件中配置规划好一周七天的约场账号和约场任务
+2. 在main中配置好约场优先级顺序
+3. 在main中配置好邮件模块
+4. 这个版本的脚本一个任务只能约一个场，如果有需要约多个场，需要创建多个脚本同时运行， 
+   并且保证每个脚本使用的账号不冲突即可。类似如下
+   ![img_1.png](img/img_1.png)
 
-#### 参与贡献
+#### auto_order类参数含义
+1.可选参数：
+- display： 是否显示约场过程 默认为false
+- send_img: 是否发送图片 默认为false
+- email: 邮箱模块，默认为None，使用配置好的邮箱模块则可以发送邮件
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
-
-
-#### 特技
-
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+#### 建议
+1. 可以使用windows定时任务设置开始约场前20秒启动
+2. 可以同时设置多个定时任务，一个定时任务对应一个文件，一组账号，一个约场任务。

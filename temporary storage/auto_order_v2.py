@@ -1,24 +1,20 @@
-import json
 import random
 import os
 from send_email import AutoEmail
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
-from selenium.webdriver.chrome.options import Options
+from info import *
 import time
 import datetime
 import re
-import requests
-import info
 
 init_name = ['马化腾', '耿妙妙', '劳洁玉', '高皓月', '孙忆远', '厍觅波', '史慕儿', '蒙新月', '巢思慧', '辛安波', '尚思溪',
              '戴颖', '杨滢', '吕嫱', '尹涵', '蔡鸾', '相娇', '杨育', '马馥', '孙涵', '牛文', '吕震', '蒋琩', '蔚促', '余学',
              '傅朋', '甘清', '沈偿', '乜乒', '闻利', '武频', '程稼', '厍峙', '张书', '易铿', '董琒', '段英飙', '孔俊誉', '杨正雅',
              '方凯康', '陆和安', '屠宏胜', '靳雅惠', '郝修诚', '李晗昱', '邹鹏翼', '漕俊民', '吴鸿信', '益安民', '赖温文', '尚弘伟',
              '芮修远', '满阳文', '陆永思', '容远航', '糜兴贤', '聂和泽', '芮坚秉', '白浩瀚', '班安平', '靳乐语', '邹哲茂', '姚正文']
-order_page_url = 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply'
-commit_url = 'https://scenter.sdu.edu.cn/tp_fp/formParser?status=update&formid=408225d8-1abe-4cdd-8a0d-fd8b1c6f&workflowAction=startProcess&seqId=&unitId=&workitemid=&process=2ff0b7de-9c31-4898-94ac-adfd3e3eebca'
+
 
 def logger(content):
     logger_content = '================ ({time}) {content} ================' \
@@ -27,17 +23,8 @@ def logger(content):
 
 
 class AutoOrder:
-    def __init__(self, driver_path, email, preference, display=False, send_img=False):
-        if display:
-            self.driver = webdriver.Chrome(driver_path)
-        else:
-            # 无界面运行，不显示浏览器
-            chrome_options = Options()
-            chrome_options.add_argument('--no-sandbox')
-            chrome_options.add_argument('--disable-dev-shm-usage')
-            # 不启动界面显示- linux下命令行模式必须启用
-            chrome_options.add_argument('--headless')
-            self.driver = webdriver.Chrome(driver_path, options=chrome_options)
+    def __init__(self, driver_path, email):
+        self.driver = webdriver.Chrome(driver_path)
         self.email = email
         self.driver.implicitly_wait(10)
         self.res = dict()
@@ -47,11 +34,6 @@ class AutoOrder:
         self.order_number = 0
         self.img = []
         self.open_time = ''
-        self.preference = preference
-        self.send_img = send_img
-        self.cookies = None
-        self.session = None
-        self.place_info = {'18:30-20:00': [], '20:00-21:30': [], '16:00-17:30': []}
 
     def login(self, un, pd):
         """
@@ -60,7 +42,7 @@ class AutoOrder:
         # 创建 WebDriver 对象，指明使用chrome浏览器驱动
         wd = self.driver
         # 调用WebDriver 对象的get方法 可以让浏览器打开指定网址
-        wd.get('https://pass.sdu.edu.cn/cas/login?service=https%3A%2F%2Fscenter.sdu.edu.cn%2Ftp_fp%2Findex.jsp')
+        wd.get('https://pass.sdu.edu.cn/cas/login?service=https%3A%2F%2Fservice.sdu.edu.cn%2Ftp_up%2F')
         # 根据id选择元素，返回的就是该元素对应的WebElement对象
         username = wd.find_element(By.ID, 'un')
         password = wd.find_element(By.ID, 'pd')
@@ -168,7 +150,7 @@ class AutoOrder:
                 for item in place_opts:
                     place_list.append(int(re.findall(r"\d+\.?\d*", item)[-1]))
                 # 选择场地 根据优先级列表顺序来[]
-                for place_index in info.preference:
+                for place_index in preference:
                     if place_index in place_list:
                         order_number = place_list.index(place_index)
                         place_opt = place_opts[order_number]
@@ -200,6 +182,7 @@ class AutoOrder:
                         continue
 
     def get_screenshot(self):
+
         '''
         调用get_screenshot_as_file(filename)方法，对浏览器当前打开页面
         进行截图,并保为e盘下的screenPicture.png文件。
@@ -212,49 +195,22 @@ class AutoOrder:
         else:
             print('截图失败')
 
-    def get_place_info(self):
-        self.cookies = self.driver.get_cookies()
-        self.session = requests.Session()
-        c = requests.cookies.RequestsCookieJar()
-        for item in self.cookies:
-            c.set(item["name"], item["value"])
-        self.session.cookies.update(c)  # 载入cookie
-        # 获取到了预约场地，时间信息
-        data = {'codelist_type': 'pbrq_fyccbh_sj_qd_4', 'formid': '408225d8-1abe-4cdd-8a0d-fd8b1c6f'}
-        place_json = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/formParser?status=codeList', data=data).text
-        place_info = json.loads(place_json)
-        for item in place_info:
-            if item['NAME'] in self.place_info:
-                index = int(re.findall(r'区(.*)号', item['VALUE'])[0])
-                self.place_info[item['NAME']].append(index)
-        return place_info
-
-    def check_place_status(self):
-        status_json = {
-            "presetKey": "310499157438464",
-            "param": {"XZSYSD": "2022-04-20青岛校区8号场地16:00-17:30"}
-        }
-        res = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/Uniformcommon/selectOnePresetData', json=status_json)
-        return res
-
     def order(self, order_list):
         wd = self.driver
-        system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
-                                        json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
-        while system_open.text != '0':
-            print('系统还没开放')
-            system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
-                                            json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
-        print('系统开放了')
         time.sleep(1)
-        self.jump(order_page_url)
-        self.get_place_info()
+        self.jump(
+            'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
+        while self.judge_in_404():
+            time.sleep(10)
+            self.jump(
+                'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#from=hall&serveID=755b2443-dda6-47b6-ba0c-13f5f1e39574&act=fp/serveapply')
         for index in range(len(order_list)):
             wd.switch_to.frame('formIframe')
             self.complete_select(order_list[index])
             if self.has_place:
                 # 切换回原来的主html
                 print('找到场地', self.find_place)
+                print(self.order_res)
                 wd.switch_to.default_content()
                 wd.find_element(By.ID, 'commit').click()
                 if index != len(order_list) - 1:
@@ -264,12 +220,11 @@ class AutoOrder:
                 wd.switch_to.default_content()
                 print(order_list[index] + '没球打了，洗洗睡吧')
         self.order_number += 1
-        if self.send_img:
-            self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
-            time.sleep(3)
-            if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
-                self.get_screenshot()
-            self.logout()
+        self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
+        time.sleep(3)
+        if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
+            self.get_screenshot()
+        self.logout()
 
 
 if __name__ == '__main__':
@@ -281,15 +236,23 @@ if __name__ == '__main__':
         password='ETTTWIGAEHOJSRAP'
     )
     email_content = ''
+
     today = datetime.datetime.now().weekday()
-    order_info = [info.login_info[today], info.order_list[today]]
-    new_task = AutoOrder(r'D:\python\auto_order\chromedriver.exe',
-                         email_module,
-                         preference=info.preference,
-                         display=True)
-    ll = ['202036957', 'yb199692']
-    new_task.login(ll[0], ll[1])
-    new_task.get_place_info()
-    check_status = new_task.check_place_status()
-    new_task.jump('https://scenter.sdu.edu.cn/tp_fp/formParser?status=select&formid=408225d8-1abe-4cdd-8a0d-fd8b1c6f&service_id=755b2443-dda6-47b6-ba0c-13f5f1e39574&process=2ff0b7de-9c31-4898-94ac-adfd3e3eebca&seqId=&seqPid=&privilegeId=711549755616fbc517757f5036364348')
-    # new_task.order(order_info[0][0][0])
+    order_info = [login_info[today], order_list[today]]
+    new_task = AutoOrder(r'/chromedriver.exe', email_module)
+    for i in range(len(order_info[0])):
+        new_task.login(order_info[0][i][0], order_info[0][i][1])
+        new_task.order(order_info[1][i])
+        new_task.logout()
+        time.sleep(1)
+    if new_task.order_res == '':
+        delta = datetime.timedelta(days=3)
+        new_task.send_email('周' + str((datetime.datetime.now() + delta).weekday() + 1) + '没有球打了')
+    else:
+        # new_task.login(order_info[0][0][0], order_info[0][0][1])
+        # new_task.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
+        # time.sleep(3)
+        # if new_task.driver.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
+        #     new_task.get_screenshot()
+        new_task.send_email(email_content + new_task.order_res, new_task.img)
+        new_task.driver.quit()

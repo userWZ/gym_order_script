@@ -15,7 +15,7 @@ def user_login(username,password):
     """
 
     url = "https://pass.sdu.edu.cn/cas/login?service=https%3A%2F%2Fscenter.sdu.edu.cn%2Ftp_fp%2Findex.jsp"
-    driver = webdriver.Chrome(r'G:\auto_order\chromedriver.exe')
+    driver = webdriver.Chrome(r'/chromedriver.exe')
     procName = current_process().name
     print("当前进程:",procName)
     sleep(1)

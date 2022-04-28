@@ -241,7 +241,7 @@ if __name__ == '__main__':
 
     today = datetime.datetime.now().weekday()
     order_info = [login_info[today], order_list[today]]
-    new_task = AutoOrder(r'G:\auto_order\chromedriver.exe', email_module)
+    new_task = AutoOrder(r'/chromedriver.exe', email_module)
     new_task.login(order_info[0][0][0], order_info[0][0][1])
     cookies = new_task.driver.get_cookies()
     s = requests.Session()

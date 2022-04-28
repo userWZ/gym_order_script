@@ -8,13 +8,13 @@ from send_email import AutoEmail
     username: '-' 代表当天不约场地
 '''
 login_info = [
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},     # 4
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},     # 5
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},  # 6
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},  # 7
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},  # 1
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},          # 2
-    {'username': '-', 'password': '-', 'name': '-', 'order_time': '16:00-17:30'},  # 3
+    {'username': '-', 'password': 'gsk199938', 'name': '郭声琨', 'order_time': '16:00-17:30'},     # 4
+    {'username': '-', 'password': 'gsk199938', 'name': '郭声琨', 'order_time': '16:00-17:30'},     # 5
+    {'username': '202136976', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},  # 6
+    {'username': '202136976', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},  # 7
+    {'username': '202136976', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},  # 1
+    {'username': '-', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},          # 2
+    {'username': '202034533', 'password': 'wuweimeng123', 'name': '武维蒙', 'order_time': '16:00-17:30'},  # 3
 ]
 
 '''

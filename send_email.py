@@ -68,9 +68,9 @@ if __name__ == '__main__':
         receiver='as456741@qq.com',
         smtp_server='smtp.163.com',
         username='wzh_7076',
-        password='ETTTWIGAEHOJSRAP'
+        password='PEBFVJRHPWHAULOH'
     )
     result_email.create_email()
-    images = ['.\\img\\202203022.png', '.\\img\\202203022.png']
-    result_email.add_img(images)
+    # images = ['.\\img\\202203022.png', '.\\img\\202203022.png']
+    # result_email.add_img(images)
     result_email.login_and_send()

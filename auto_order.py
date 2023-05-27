@@ -1,6 +1,9 @@
 import json
 import random
 import os
+
+import numpy as np
+
 from send_email import AutoEmail
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,10 +13,10 @@ import time
 import datetime
 import re
 import requests
-import os
-import info
-
-
+import pytesseract
+import imageio
+import urllib.request
+import cv2
 init_name = ['马化腾', '耿妙妙', '劳洁玉', '高皓月', '孙忆远', '厍觅波', '史慕儿', '蒙新月', '巢思慧', '辛安波', '尚思溪',
              '戴颖', '杨滢', '吕嫱', '尹涵', '蔡鸾', '相娇', '杨育', '马馥', '孙涵', '牛文', '吕震', '蒋琩', '蔚促', '余学',
              '傅朋', '甘清', '沈偿', '乜乒', '闻利', '武频', '程稼', '厍峙', '张书', '易铿', '董琒', '段英飙', '孔俊誉', '杨正雅',
@@ -70,6 +73,7 @@ class AutoOrder:
         password = wd.find_element(By.ID, 'pd')
         username.send_keys(un)
         password.send_keys(pd + '\n')
+        time.sleep(1)
 
     def logout(self):
         """
@@ -245,19 +249,32 @@ class AutoOrder:
         else:
             return False
 
+    def get_verification_code(self):
+        wd = self.driver
+        verification_img_src = wd.find_element(By.CLASS_NAME, 'ide_code_image').get_attribute("src")
+        img_data = self.session.get(url=verification_img_src).content
+        tmp = imageio.mimread(img_data)
+        tmp = np.array(tmp)
+        img = tmp[0][:, :, :3]
+        verification_code = pytesseract.image_to_string(img)
+        return verification_code
+
     def order(self):
         wd = self.driver
-        self.get_place_info()
-        system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
-                                        json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
-        while system_open.text != '0':
-            time.sleep(0.5)
-            print('系统还没开放')
-            system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
-                                            json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
-        print('系统开放了')
-        time.sleep(1)
+        time.sleep(2)
         self.jump(order_page_url)
+        self.get_place_info()
+
+        # system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
+        #                                 json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
+        # while system_open.text != '0':
+        #     time.sleep(0.5)
+        #     print('系统还没开放')
+        #     system_open = self.session.post(url='https://scenter.sdu.edu.cn/tp_fp/fp/serveapply/checkService',
+        #                                     json={'serveID': "755b2443-dda6-47b6-ba0c-13f5f1e39574"})
+        # print('系统开放了')
+        # time.sleep(1)
+
         # 根据优先顺序选择场地
         place_set = self.place_info[self.login_info['order_time']]
         suitable_place = [val for val in self.preference if val in place_set]
@@ -265,7 +282,12 @@ class AutoOrder:
             if self.complete_select(place):
                 wd.switch_to.default_content()
                 wd.find_element(By.ID, 'commit').click()
-            time.sleep(1)
+                # 填验证码
+                verify_code = self.get_verification_code()
+                verify_input = wd.find_element(By.ID, 'applyCode')
+                verify_input.send_keys(verify_code)
+                wd.find_element(By.ID, "fp_apply_code_apply").click()
+                time.sleep(1)
             res = self.judgeSuccess()
             print(res)
             if res:
@@ -278,7 +300,6 @@ class AutoOrder:
                 self.jump(order_page_url)
                 continue
 
-
         # 如果预约成功，并且需要保存截图
         if self.send_img and self.has_place:
             self.jump('https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish')
@@ -286,3 +307,9 @@ class AutoOrder:
             if wd.current_url == 'https://scenter.sdu.edu.cn/tp_fp/view?m=fp#act=fp/myserviceapply/indexFinish':
                 self.get_screenshot()
         self.logout()
+
+
+
+
+
+

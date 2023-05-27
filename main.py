@@ -8,19 +8,9 @@ from send_email import AutoEmail
     username: '-' 代表当天不约场地
 '''
 login_info = [
-    {'username': '-', 'password': 'gsk199938', 'name': '郭声琨', 'order_time': '16:00-17:30'},     # 4
-    {'username': '-', 'password': 'gsk199938', 'name': '郭声琨', 'order_time': '16:00-17:30'},     # 5
-    {'username': '202136976', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},  # 6
-    {'username': '202136976', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},  # 7
-    {'username': '202136976', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},  # 1
-    {'username': '-', 'password': 'lxj990212lxj', 'name': '梁新杰', 'order_time': '16:00-17:30'},          # 2
-    {'username': '202034533', 'password': 'wuweimeng123', 'name': '武维蒙', 'order_time': '16:00-17:30'},  # 3
+    {'username': '', 'password': '', 'name': '', 'order_time': '16:00-17:30'},
 ]
-
-'''
-    预约场地优先级顺序数组
-'''
-preference = [12, 11, 10, 9, 1, 2, 3, 8, 5, 6, 4, 7]
+preference = [9, 12, 7, 6, 1, 2, 3, 8, 5, 11, 4, 10]
 
 '''
     邮件模块
@@ -30,17 +20,18 @@ email_module = AutoEmail(
         receiver='as456741@qq.com',# 收件人邮箱
         smtp_server='smtp.163.com',# 发件人smtp服务器
         username='wzh_7076', # 发件人邮箱账号
-        password='ETTTWIGAEHOJSRAP' # 发件人邮箱绑定码
+        password='PEBFVJRHPWHAULOH' # 发件人邮箱绑定码
 )
 
 if __name__ == '__main__':
     email_content = ''
     today = datetime.datetime.now().weekday()
+
     if login_info[today]['username'] != '-':
         new_task = AutoOrder(info.driver_path,
                              preference,
                              login_info[today],
-                             display=False,
+                             display=True,
                              email=email_module)
         new_task.login()
         new_task.order()
